@@ -1,12 +1,205 @@
 <!DOCTYPE html>
 <html lang="de">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>APEX Signals</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
-</html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX Signals</title>
+<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;500;700;800;900&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+:root{--black:#050608;--white:#f0efe9;--green:#00ff87;--green2:#00c862;--red:#ff3d5a;--gold:#ffc94d;--muted:#4a5060;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08)}
+body{background:var(--black);color:var(--white);font-family:'Cabinet Grotesk',sans-serif;overflow-x:hidden;cursor:none}
+.cursor{position:fixed;width:8px;height:8px;background:var(--green);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference}
+.cursor-ring{position:fixed;width:36px;height:36px;border:1px solid rgba(0,255,135,0.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform 0.12s ease}
+#canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:20px 48px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
+.pulse{width:7px;height:7px;background:var(--green);border-radius:50%;box-shadow:0 0 0 0 rgba(0,255,135,0.6);animation:ripple 2s infinite}
+@keyframes ripple{0%{box-shadow:0 0 0 0 rgba(0,255,135,0.6)}70%{box-shadow:0 0 0 8px rgba(0,255,135,0)}100%{box-shadow:0 0 0 0 rgba(0,255,135,0)}}
+.nav-cta{padding:10px 22px;border:1px solid var(--border);border-radius:100px;font-size:13px;font-weight:600;color:var(--white);text-decoration:none;backdrop-filter:blur(10px);transition:all 0.2s;background:rgba(255,255,255,0.04)}
+.nav-cta:hover{background:var(--green);color:#000;border-color:var(--green)}
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:140px 48px 80px;position:relative;z-index:1}
+.hero-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:40px;opacity:0;animation:rise 0.8s 0.2s forwards}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.eyebrow-tag{font-family:'Syne Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--green);text-transform:uppercase}
+.eyebrow-line{width:40px;height:1px;background:var(--green);opacity:0.5}
+.hero-title{font-size:clamp(64px,10vw,140px);font-weight:900;line-height:0.92;letter-spacing:-4px;margin-bottom:48px;opacity:0;animation:rise 0.8s 0.3s forwards}
+.hero-title .line2{display:block;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,0.25)}
+.hero-title .word-green{color:var(--green);-webkit-text-stroke:0}
+.hero-bottom{display:flex;align-items:flex-end;justify-content:space-between;gap:40px;flex-wrap:wrap;opacity:0;animation:rise 0.8s 0.5s forwards}
+.hero-desc{max-width:380px;font-size:16px;color:var(--muted);line-height:1.7;font-weight:400}
+.hero-actions{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.btn-main{display:inline-flex;align-items:center;gap:12px;padding:18px 36px;background:var(--green);color:#000;border-radius:100px;font-size:15px;font-weight:800;text-decoration:none;transition:all 0.25s;position:relative;overflow:hidden}
+.btn-main::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,0.3) 50%,transparent 70%);transform:translateX(-100%);transition:transform 0.5s}
+.btn-main:hover::after{transform:translateX(100%)}
+.btn-main:hover{transform:scale(1.04);box-shadow:0 20px 60px rgba(0,255,135,0.25)}
+.btn-arrow{width:32px;height:32px;background:rgba(0,0,0,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px}
+.hero-note{font-family:'Syne Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px}
+.marquee-wrap{position:relative;z-index:1;padding:20px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden;background:rgba(0,255,135,0.03)}
+.marquee{display:flex;gap:60px;animation:scroll 25s linear infinite;width:max-content}
+@keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.m-item{display:flex;align-items:center;gap:12px;font-family:'Syne Mono',monospace;font-size:12px;white-space:nowrap}
+.m-pair{color:var(--white);font-weight:500}
+.m-badge{padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:0.5px}
+.m-badge.l{background:rgba(0,255,135,0.15);color:var(--green)}
+.m-badge.s{background:rgba(255,61,90,0.15);color:var(--red)}
+.m-val{color:var(--muted)}
+.m-score{color:var(--gold)}
+.stats-section{position:relative;z-index:1;padding:100px 48px}
+.stats-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.stat-box{background:var(--black);padding:56px 48px;position:relative;overflow:hidden}
+.stat-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:0;transition:opacity 0.3s}
+.stat-box:hover::before{opacity:1}
+.stat-val{font-size:72px;font-weight:900;line-height:1;letter-spacing:-3px;margin-bottom:10px;background:linear-gradient(135deg,var(--white),rgba(255,255,255,0.5));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-val.g{background:linear-gradient(135deg,var(--green),var(--green2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-family:'Syne Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.stat-sub{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+.signals-section{position:relative;z-index:1;padding:40px 48px 100px;max-width:1100px;margin:0 auto}
+.s-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px}
+.s-title{font-size:clamp(32px,4vw,52px);font-weight:900;letter-spacing:-2px;line-height:1.05}
+.s-sub{font-size:14px;color:var(--muted);max-width:260px;text-align:right;line-height:1.6}
+.signal-list{display:flex;flex-direction:column;gap:0;border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.sig-row{display:grid;grid-template-columns:120px 80px 100px 1fr 1fr 80px;align-items:center;gap:16px;padding:22px 28px;border-bottom:1px solid var(--border);transition:background 0.2s}
+.sig-row:last-child{border-bottom:none}
+.sig-row:hover{background:var(--card)}
+.sig-row.blurred{filter:blur(5px);user-select:none;pointer-events:none}
+.sig-pair-name{font-weight:700;font-size:15px;letter-spacing:-0.3px}
+.dir-badge{display:inline-flex;align-items:center;justify-content:center;padding:4px 12px;border-radius:100px;font-size:11px;font-weight:700;letter-spacing:1px}
+.dir-badge.long{background:rgba(0,255,135,0.1);color:var(--green);border:1px solid rgba(0,255,135,0.2)}
+.dir-badge.short{background:rgba(255,61,90,0.1);color:var(--red);border:1px solid rgba(255,61,90,0.2)}
+.sig-phase{font-family:'Syne Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px}
+.sig-prices{font-family:'Syne Mono',monospace;font-size:12px;color:var(--muted)}
+.sig-prices .entry{color:var(--white)}
+.sig-prices .tp{color:var(--green)}
+.sig-prices .sl{color:var(--red)}
+.sig-rr{font-family:'Syne Mono',monospace;font-size:13px;font-weight:600;color:var(--gold)}
+.sig-score{font-family:'Syne Mono',monospace;font-size:12px;color:var(--muted);text-align:right}
+.sig-score .s-num{font-size:16px;font-weight:700;color:var(--white);display:block}
+.lock-overlay{position:relative;margin-top:-1px}
+.lock-box{background:linear-gradient(to bottom,transparent,rgba(5,6,8,0.97) 30%);padding:80px 48px 48px;text-align:center}
+.lock-icon{width:56px;height:56px;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 20px;background:var(--card)}
+.lock-title{font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:10px}
+.lock-sub{font-size:15px;color:var(--muted);margin-bottom:28px;max-width:320px;margin-left:auto;margin-right:auto;line-height:1.6}
+.how-section{position:relative;z-index:1;padding:80px 48px;max-width:1100px;margin:0 auto}
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:48px;background:var(--border);border-radius:20px;overflow:hidden}
+.how-card{background:var(--black);padding:48px 36px;transition:background 0.2s}
+.how-card:hover{background:rgba(255,255,255,0.03)}
+.how-num{font-family:'Syne Mono',monospace;font-size:11px;color:var(--green);letter-spacing:2px;margin-bottom:24px}
+.how-card h3{font-size:20px;font-weight:800;letter-spacing:-0.5px;margin-bottom:12px;line-height:1.2}
+.how-card p{font-size:14px;color:var(--muted);line-height:1.7}
+.pricing-section{position:relative;z-index:1;padding:80px 48px;max-width:1100px;margin:0 auto}
+.pricing-wrap{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin-top:48px;background:var(--border);border-radius:20px;overflow:hidden}
+.pricing-left{background:var(--green);padding:64px 56px;color:#000}
+.pricing-left .p-label{font-family:'Syne Mono',monospace;font-size:11px;letter-spacing:2px;opacity:0.6;margin-bottom:32px;text-transform:uppercase}
+.p-amount{font-size:96px;font-weight:900;line-height:1;letter-spacing:-5px;margin-bottom:4px}
+.p-period{font-size:13px;opacity:0.6;margin-bottom:40px;font-family:'Syne Mono',monospace}
+.pricing-right{background:var(--black);padding:64px 56px}
+.feature-list{list-style:none;margin-bottom:40px}
+.feature-list li{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);font-size:15px;line-height:1.4}
+.feature-list li:first-child{border-top:1px solid var(--border)}
+.f-check{color:var(--green);font-size:13px;margin-top:2px;flex-shrink:0}
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:40px 48px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px}
+.footer-logo{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;letter-spacing:2px}
+.footer-right{font-family:'Syne Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.5px;text-align:right;line-height:1.8}
+.section-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.eyebrow-mono{font-family:'Syne Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--green);text-transform:uppercase}
+.section-big-title{font-size:clamp(32px,4vw,52px);font-weight:900;letter-spacing:-1.5px;line-height:1.05}
+@media(max-width:768px){nav{padding:18px 20px}.hero{padding:120px 20px 60px}.hero-title{letter-spacing:-2px}.hero-bottom{flex-direction:column;align-items:flex-start}.hero-actions{align-items:flex-start}.stats-inner{grid-template-columns:1fr}.stat-box{padding:36px 28px}.stat-val{font-size:56px}.signals-section{padding:40px 20px 80px}.s-header{flex-direction:column;align-items:flex-start;gap:12px}.s-sub{text-align:left}.sig-row{grid-template-columns:1fr 1fr;gap:8px;padding:16px 20px}.sig-prices,.sig-rr,.sig-score{display:none}.how-grid{grid-template-columns:1fr}.pricing-wrap{grid-template-columns:1fr}.pricing-left,.pricing-right{padding:40px 28px}.p-amount{font-size:72px}.how-section,.pricing-section{padding:60px 20px}.lock-box{padding:60px 20px 40px}footer{padding:28px 20px}.footer-right{text-align:left}}
+</style></head><body>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<canvas id="canvas"></canvas>
+<nav>
+  <div class="nav-logo"><div class="pulse"></div>APEX</div>
+  <a href="https://t.me/Apex_Trade_Signals_bot" class="nav-cta" target="_blank">Telegram öffnen →</a>
+</nav>
+<section class="hero">
+  <div class="hero-eyebrow"><span class="eyebrow-tag">Algorithmische Signale · 24/7</span><div class="eyebrow-line"></div></div>
+  <h1 class="hero-title">Trade<br><span class="line2">smarter<span class="word-green">.</span></span></h1>
+  <div class="hero-bottom">
+    <p class="hero-desc">APEX analysiert BTC, ETH und XRP rund um die Uhr. Du bekommst nur die besten Setups – mit Entry, SL, TP und Score – direkt auf Telegram.</p>
+    <div class="hero-actions">
+      <a href="https://t.me/Apex_Trade_Signals_bot" class="btn-main" target="_blank">Kostenlos starten<span class="btn-arrow">→</span></a>
+      <span class="hero-note">Keine Kreditkarte · Sofort aktiv</span>
+    </div>
+  </div>
+</section>
+<div class="marquee-wrap"><div class="marquee">
+  <div class="m-item"><span class="m-pair">XRP/USDT</span><span class="m-badge l">LONG</span><span class="m-val">0.5241</span><span class="m-score">◆ 12</span></div>
+  <div class="m-item"><span class="m-pair">ETH/USDT</span><span class="m-badge s">SHORT</span><span class="m-val">2841.0</span><span class="m-score">◆ 11</span></div>
+  <div class="m-item"><span class="m-pair">BTC/USDT</span><span class="m-badge l">LONG</span><span class="m-val">62450</span><span class="m-score">◆ 10</span></div>
+  <div class="m-item"><span class="m-pair">XRP/USDT</span><span class="m-badge l">LONG</span><span class="m-val">0.5180</span><span class="m-score">◆ 13</span></div>
+  <div class="m-item"><span class="m-pair">ETH/USDT</span><span class="m-badge l">LONG</span><span class="m-val">2790.0</span><span class="m-score">◆ 11</span></div>
+  <div class="m-item"><span class="m-pair">BTC/USDT</span><span class="m-badge s">SHORT</span><span class="m-val">63100</span><span class="m-score">◆ 12</span></div>
+  <div class="m-item"><span class="m-pair">XRP/USDT</span><span class="m-badge l">LONG</span><span class="m-val">0.5241</span><span class="m-score">◆ 12</span></div>
+  <div class="m-item"><span class="m-pair">ETH/USDT</span><span class="m-badge s">SHORT</span><span class="m-val">2841.0</span><span class="m-score">◆ 11</span></div>
+  <div class="m-item"><span class="m-pair">BTC/USDT</span><span class="m-badge l">LONG</span><span class="m-val">62450</span><span class="m-score">◆ 10</span></div>
+  <div class="m-item"><span class="m-pair">XRP/USDT</span><span class="m-badge l">LONG</span><span class="m-val">0.5180</span><span class="m-score">◆ 13</span></div>
+  <div class="m-item"><span class="m-pair">ETH/USDT</span><span class="m-badge l">LONG</span><span class="m-val">2790.0</span><span class="m-score">◆ 11</span></div>
+  <div class="m-item"><span class="m-pair">BTC/USDT</span><span class="m-badge s">SHORT</span><span class="m-val">63100</span><span class="m-score">◆ 12</span></div>
+</div></div>
+<section class="stats-section"><div class="stats-inner">
+  <div class="stat-box"><div class="stat-val g">84%</div><div class="stat-label">Win Rate</div><div class="stat-sub">XRP/USDT · letzte 30 Tage</div></div>
+  <div class="stat-box"><div class="stat-val">1:2.3</div><div class="stat-label">Risk / Reward</div><div class="stat-sub">Durchschnittlich pro Trade</div></div>
+  <div class="stat-box"><div class="stat-val">≥11</div><div class="stat-label">Min. Score</div><div class="stat-sub">Nur hochwertige Setups passieren</div></div>
+</div></section>
+<section class="signals-section">
+  <div class="s-header"><h2 class="s-title">Live<br>Signale.</h2><p class="s-sub">Jedes Signal enthält alles was du brauchst – nichts mehr, nichts weniger.</p></div>
+  <div class="signal-list">
+    <div class="sig-row"><span class="sig-pair-name">XRP/USDT</span><span class="dir-badge long">LONG</span><span class="sig-phase">BULLRUN</span><div class="sig-prices"><span class="entry">0.5241</span> → <span class="sl">0.4980</span> / <span class="tp">0.5610</span></div><div class="sig-rr">1 : 2.3</div><div class="sig-score"><span class="s-num">12</span>Score</div></div>
+    <div class="sig-row"><span class="sig-pair-name">ETH/USDT</span><span class="dir-badge short">SHORT</span><span class="sig-phase">BEARMARKET</span><div class="sig-prices"><span class="entry">2841.0</span> → <span class="sl">2910.0</span> / <span class="tp">2720.0</span></div><div class="sig-rr">1 : 1.8</div><div class="sig-score"><span class="s-num">11</span>Score</div></div>
+    <div class="sig-row blurred"><span class="sig-pair-name">BTC/USDT</span><span class="dir-badge long">LONG</span><span class="sig-phase">RECOVERY</span><div class="sig-prices"><span class="entry">██████</span> → <span class="sl">██████</span> / <span class="tp">██████</span></div><div class="sig-rr">1 : █.█</div><div class="sig-score"><span class="s-num">██</span>Score</div></div>
+  </div>
+  <div class="lock-overlay"><div class="lock-box">
+    <div class="lock-icon">🔒</div>
+    <h3 class="lock-title">Alle Signale freischalten</h3>
+    <p class="lock-sub">Tritt dem Telegram Bot bei und bekomme jeden Trade sofort auf dein Handy.</p>
+    <a href="https://t.me/Apex_Trade_Signals_bot" class="btn-main" target="_blank">Auf Telegram starten<span class="btn-arrow">→</span></a>
+  </div></div>
+</section>
+<section class="how-section">
+  <div class="section-eyebrow"><span class="eyebrow-mono">So funktioniert's</span><div class="eyebrow-line"></div></div>
+  <h2 class="section-big-title">3 Schritte.<br>Fertig.</h2>
+  <div class="how-grid">
+    <div class="how-card"><div class="how-num">01 —</div><h3>Bot auf Telegram starten</h3><p>Öffne @Apex_Trade_Signals_bot und tippe /start. Keine Registrierung, kein Passwort.</p></div>
+    <div class="how-card"><div class="how-num">02 —</div><h3>APEX scannt den Markt</h3><p>Der Algorithmus analysiert BTC, ETH und XRP mit über 10 Filtern – rund um die Uhr, ohne Pause.</p></div>
+    <div class="how-card"><div class="how-num">03 —</div><h3>Signal direkt auf dein Handy</h3><p>Sobald ein Setup die Kriterien erfüllt, bekommst du eine Push-Nachricht mit allem was du brauchst.</p></div>
+  </div>
+</section>
+<section class="pricing-section">
+  <div class="section-eyebrow"><span class="eyebrow-mono">Pricing</span><div class="eyebrow-line"></div></div>
+  <h2 class="section-big-title">Einfach.<br>Transparent.</h2>
+  <div class="pricing-wrap">
+    <div class="pricing-left"><div class="p-label">Pro Plan</div><div class="p-amount">€19</div><div class="p-period">/ Monat · jederzeit kündbar</div><a href="https://t.me/Apex_Trade_Signals_bot" class="btn-main" style="background:#000;color:#fff;" target="_blank">Jetzt starten<span class="btn-arrow" style="background:rgba(255,255,255,0.1)">→</span></a></div>
+    <div class="pricing-right"><ul class="feature-list">
+      <li><span class="f-check">✓</span>Alle Live-Signale in Echtzeit</li>
+      <li><span class="f-check">✓</span>BTC, ETH und XRP – 3 Märkte</li>
+      <li><span class="f-check">✓</span>Entry, Stop Loss, Take Profit, Score, Phase</li>
+      <li><span class="f-check">✓</span>Telegram Push-Benachrichtigungen</li>
+      <li><span class="f-check">✓</span>Web Dashboard mit Performance-Daten</li>
+      <li><span class="f-check">✓</span>24/7 Algorithmus ohne Pause</li>
+    </ul><a href="https://t.me/Apex_Trade_Signals_bot" class="btn-main" target="_blank">Jetzt starten<span class="btn-arrow">→</span></a></div>
+  </div>
+</section>
+<footer>
+  <div class="footer-logo"><div class="pulse"></div>APEX Signals</div>
+  <div class="footer-right">© 2026 APEX Signals<br>Keine Anlageberatung · Handel auf eigenes Risiko</div>
+</footer>
+<script>
+const cursor=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px'});
+function animRing(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)}animRing();
+document.querySelectorAll('a,button').forEach(el=>{el.addEventListener('mouseenter',()=>{cursor.style.width='16px';cursor.style.height='16px';ring.style.width='56px';ring.style.height='56px'});el.addEventListener('mouseleave',()=>{cursor.style.width='8px';cursor.style.height='8px';ring.style.width='36px';ring.style.height='36px'})});
+const canvas=document.getElementById('canvas'),ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight});
+const particles=[];
+for(let i=0;i<60;i++)particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,r:Math.random()*1.2+0.3,vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,o:Math.random()*0.4+0.1});
+function drawParticles(){ctx.clearRect(0,0,canvas.width,canvas.height);particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=canvas.width;if(p.x>canvas.width)p.x=0;if(p.y<0)p.y=canvas.height;if(p.y>canvas.height)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(0,255,135,${p.o})`;ctx.fill()});
+for(let i=0;i<particles.length;i++)for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<120){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=`rgba(0,255,135,${0.06*(1-dist/120)})`;ctx.lineWidth=0.5;ctx.stroke()}}
+requestAnimationFrame(drawParticles)}drawParticles();
+const observer=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)'}})},{threshold:0.1});
+document.querySelectorAll('.stat-box,.how-card,.sig-row').forEach(el=>{el.style.opacity='0';el.style.transform='translateY(20px)';el.style.transition='opacity 0.6s ease,transform 0.6s ease';observer.observe(el)});
+</script></body></html>
